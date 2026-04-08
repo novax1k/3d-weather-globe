@@ -171,13 +171,17 @@
         // 改用 let 宣告，讓使用者可以在網頁上動態輸入金鑰
         let userApiKey = ""; 
 
-        // API 重試機制
+        // API 重試機制 (強化錯誤處理，抓取真實錯誤訊息)
         async function fetchWithRetry(url, options, retries = 5) {
             let delay = 1000;
             for (let i = 0; i < retries; i++) {
                 try {
                     const response = await fetch(url, options);
-                    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                    if (!response.ok) {
+                        // 解析 Google API 回傳的真實錯誤細節
+                        const errData = await response.json().catch(() => ({}));
+                        throw new Error(errData.error?.message || `HTTP 錯誤碼: ${response.status}`);
+                    }
                     return await response.json();
                 } catch (error) {
                     if (i === retries - 1) throw error;
@@ -208,7 +212,7 @@
             };
 
             const result = await fetchWithRetry(url, options);
-            return result.candidates?.[0]?.content?.parts?.[0]?.text || "無法獲取建議，請稍後再試。";
+            return result.candidates?.[0]?.content?.parts?.[0]?.text || "無法獲取建議，請確認 API 回傳格式。";
         }
 
         closeBtn.addEventListener('click', () => {
@@ -299,7 +303,13 @@
                             resultDiv.innerHTML = `<strong class="text-purple-300">${prefix}</strong><br/><span class="mt-2 block text-gray-300">${cleanSuggestion}</span>`;
                             resultDiv.classList.remove('hidden');
                         } catch (error) {
-                            resultDiv.innerHTML = `<span class="text-red-400">獲取建議失敗，請檢查網路狀態或稍後再試。</span>`;
+                            // 將真實錯誤訊息顯示在畫面上，方便除錯
+                            console.error("Gemini API 發生錯誤:", error);
+                            resultDiv.innerHTML = `
+                                <span class="text-red-400 font-bold">⚠️ 發生錯誤：</span><br/>
+                                <span class="text-red-300 text-xs mt-1 block break-words">${error.message}</span>
+                                <button onclick="userApiKey=''; alert('金鑰已清除，請重新點擊按鈕輸入');" class="mt-2 text-xs text-gray-400 underline hover:text-white">點此清除重設 API Key</button>
+                            `;
                             resultDiv.classList.remove('hidden');
                         } finally {
                             allBtns.forEach(b => b.disabled = false);
