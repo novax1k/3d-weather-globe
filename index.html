@@ -57,6 +57,11 @@
         <p class="text-sm text-gray-300">拖曳以旋轉地球，點擊城市查看即時天氣</p>
     </div>
 
+    <!-- 定位按鈕 (新增) -->
+    <button id="locate-btn" class="absolute bottom-8 right-8 z-10 glass-panel px-4 py-3 rounded-full flex items-center gap-2 hover:bg-white/20 transition-all text-white font-medium shadow-lg hover:scale-105">
+        <i data-lucide="navigation"></i> <span class="hidden sm:inline">我的位置</span>
+    </button>
+
     <!-- 地球容器 -->
     <div id="globe-container"></div>
 
@@ -399,12 +404,109 @@
                 weatherContent.innerHTML = `
                     <div class="text-center text-red-400 mt-4">
                         <i data-lucide="alert-circle" class="w-12 h-12 mx-auto mb-2"></i>
-                        <p>抱歉，無法取得 ${city.name} 的天氣資料。<br>請稍後再試。</p>
-                    </div>
-                `;
+                <p>抱歉，無法取得 ${city.name} 的天氣資料。<br>請稍後再試。</p>
+            </div>
+        `;
+        lucide.createIcons();
+    }
+}
+
+        // --- 新增：取得使用者地理位置功能 ---
+        const locateBtn = document.getElementById('locate-btn');
+        locateBtn.addEventListener('click', () => {
+            if ("geolocation" in navigator) {
+                // 顯示載入中動畫
+                const originalContent = locateBtn.innerHTML;
+                locateBtn.innerHTML = `<i data-lucide="loader-2" class="animate-spin"></i> <span class="hidden sm:inline">定位中...</span>`;
                 lucide.createIcons();
+
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        const lat = position.coords.latitude;
+                        const lng = position.coords.longitude;
+
+                        // 恢復按鈕文字
+                        locateBtn.innerHTML = originalContent;
+                        lucide.createIcons();
+
+                        // 建立一個代表使用者位置的專屬物件
+                        const myLocation = {
+                            name: "目前位置",
+                            nameEn: "My Location",
+                            lat: lat,
+                            lng: lng,
+                            country: "定位點",
+                            countryEn: "Geolocated"
+                        };
+
+                        // 檢查是否已經點過定位，如果有就更新，沒有就加入城市陣列
+                        const existingIndex = cities.findIndex(c => c.name === "目前位置");
+                        if (existingIndex !== -1) {
+                            cities[existingIndex] = myLocation;
+                        } else {
+                            cities.push(myLocation);
+                        }
+
+                        // 更新地球上的 HTML 標籤
+                        world.htmlElementsData(cities);
+
+                        // 強制套用目前的縮放比例，避免新標籤太大或太小
+                        setTimeout(() => {
+                            const currentAlt = world.pointOfView().altitude;
+                            const dynamicScale = Math.max(0.8, Math.min(1.2, currentAlt * 0.4));
+                            document.querySelectorAll('.city-marker-content').forEach(el => {
+                                el.style.transform = `translate(-50%, -50%) scale(${dynamicScale})`;
+                            });
+                        }, 50);
+
+                        // 模擬點擊這個新城市，轉動地球並呼叫天氣 API
+                        handleCityClick(myLocation);
+                    },
+                    (error) => {
+                        // GeolocationPositionError 物件在 console.log 中通常顯示為 {}，因此我們需要提取其 code 和 message 屬性
+                        let errorMessage = "未知錯誤";
+                        switch(error.code) {
+                            case error.PERMISSION_DENIED:
+                                errorMessage = "使用者拒絕提供地理位置。";
+                                break;
+                            case error.POSITION_UNAVAILABLE:
+                                errorMessage = "無法取得位置資訊。";
+                                break;
+                            case error.TIMEOUT:
+                                errorMessage = "請求使用者地理位置逾時。";
+                                break;
+                            case error.UNKNOWN_ERROR:
+                                errorMessage = "發生不明錯誤。";
+                                break;
+                        }
+                        console.error("定位錯誤:", errorMessage, error.message);
+                        locateBtn.innerHTML = `<i data-lucide="navigation-off"></i> <span class="hidden sm:inline">定位失敗</span>`;
+                        lucide.createIcons();
+                        // 如果使用者拒絕授權或無法取得位置，顯示自訂的彈出視窗(避免使用瀏覽器內建 alert 影響體驗)
+                        setTimeout(() => {
+                            locateBtn.innerHTML = originalContent;
+                            lucide.createIcons();
+                            
+                            weatherPanel.classList.remove('hidden');
+                            weatherContent.innerHTML = `
+                                <div class="text-center text-red-400 mt-4">
+                                    <i data-lucide="alert-triangle" class="w-12 h-12 mx-auto mb-2"></i>
+                                    <h3 class="text-xl font-bold mb-2">定位失敗</h3>
+                                    <p class="text-sm text-gray-300 mb-4">${errorMessage}<br>請確認您的裝置或瀏覽器已「允許」此網站存取位置資訊，並且您目前位於安全的 HTTPS 連線中 (或 localhost)。</p>
+                                </div>
+                            `;
+                            lucide.createIcons();
+                        }, 1000);
+                    },
+                    { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 } // 定位參數設定
+                );
+            } else {
+                // 瀏覽器不支援時的處理
+                weatherPanel.classList.remove('hidden');
+                weatherContent.innerHTML = `<div class="text-center text-red-400 mt-4"><p>您的瀏覽器不支援地理定位功能。</p></div>`;
             }
-        }
+        });
+
     </script>
 </body>
 </html>
