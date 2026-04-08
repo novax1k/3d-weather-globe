@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D 即時天氣地球儀</title>
+    <!-- 引入 Tailwind CSS 進行快速 UI 樣式設計 -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 引入 Three.js 與 Globe.gl -->
+    <script src="https://unpkg.com/three/build/three.min.js"></script>
+    <script src="https://unpkg.com/globe.gl"></script>
+    <!-- 引入 Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        body { margin: 0; padding: 0; overflow: hidden; background-color: #000; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        #globe-container { width: 100vw; height: 100vh; cursor: grab; }
+        #globe-container:active { cursor: grabbing; }
+        
+        /* 玻璃擬態 (Glassmorphism) 樣式設計 */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+
+        /* 載入動畫 */
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top: 4px solid #fff;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* 自訂捲軸樣式 */
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.3); border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.5); }
+    </style>
+</head>
+<body class="text-white relative">
+
+    <!-- 標題區域 -->
+    <div class="absolute top-6 left-6 z-10 glass-panel px-6 py-4 rounded-2xl pointer-events-none">
+        <h1 class="text-2xl font-bold tracking-wider mb-1 flex items-center gap-2">
+            <i data-lucide="globe-2"></i> 世界即時天氣
+        </h1>
+        <p class="text-sm text-gray-300">拖曳以旋轉地球，點擊城市查看即時天氣</p>
+    </div>
+
+    <!-- 地球容器 -->
+    <div id="globe-container"></div>
+
+    <!-- 天氣資訊彈出面板 -->
+    <div id="weather-panel" class="absolute top-1/2 right-8 transform -translate-y-1/2 z-20 glass-panel w-80 rounded-2xl p-6 hidden transition-opacity duration-300">
+        <button id="close-btn" class="absolute top-4 right-4 text-gray-300 hover:text-white transition-colors">
+            <i data-lucide="x"></i>
+        </button>
+        
+        <div id="weather-content" class="max-h-[70vh] overflow-y-auto overflow-x-hidden p-1 custom-scrollbar">
+            <!-- 動態插入內容 -->
+        </div>
+    </div>
+
+    <script>
+        const apiKey = ""; // 供環境自動注入 API Key
+
+        lucide.createIcons();
+
+        // 城市資料庫
+        const cities = [
+            { name: "台北", lat: 25.0330, lng: 121.5654, country: "台灣" },
+            { name: "新竹", lat: 24.8138, lng: 120.9675, country: "台灣" },
+            { name: "苗栗", lat: 24.5648, lng: 120.8206, country: "台灣" },
+            { name: "台中", lat: 24.1477, lng: 120.6736, country: "台灣" },
+            { name: "東京", lat: 35.6762, lng: 139.6503, country: "日本" },
+            { name: "首爾", lat: 37.5665, lng: 126.9780, country: "韓國" },
+            { name: "紐約", lat: 40.7128, lng: -74.0060, country: "美國" },
+            { name: "洛杉磯", lat: 34.0522, lng: -118.2437, country: "美國" },
+            { name: "倫敦", lat: 51.5074, lng: -0.1278, country: "英國" },
+            { name: "巴黎", lat: 48.8566, lng: 2.3522, country: "法國" },
+            { name: "雪梨", lat: -33.8688, lng: 151.2093, country: "澳洲" },
+            { name: "新加坡", lat: 1.3521, lng: 103.8198, country: "新加坡" },
+            { name: "杜拜", lat: 25.2048, lng: 55.2708, country: "阿聯酋" },
+            { name: "開普敦", lat: -33.9249, lng: 18.4241, country: "南非" },
+            { name: "雷克雅維克", lat: 64.1466, lng: -21.9426, country: "冰島" }
+        ];
+
+        // 建立 3D 地球實例
+        const globeContainer = document.getElementById('globe-container');
+        const world = Globe()(globeContainer)
+            .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-night.jpg')
+            .backgroundImageUrl('https://unpkg.com/three-globe/example/img/night-sky.png')
+            
+            // 使用 HTML 元素取代 WebGL 文字，徹底解決字型崩潰與中文亂碼問題
+            .htmlElementsData(cities)
+            .htmlLat(d => d.lat)
+            .htmlLng(d => d.lng)
+            .htmlAltitude(0.01)
+            .htmlElement(d => {
+                const el = document.createElement('div');
+                // DOM 元素的 UI 設計
+                el.innerHTML = `
+                    <div class="city-marker-content flex flex-col items-center absolute cursor-pointer hover:scale-110 transition-transform duration-200" 
+                         style="left: 0; top: 0; transform: translate(-50%, -50%) scale(1); pointer-events: auto;">
+                        <div class="w-2.5 h-2.5 bg-orange-400 rounded-full shadow-[0_0_12px_2px_rgba(255,165,0,0.9)] mb-1"></div>
+                        <div class="text-orange-400 font-bold text-sm whitespace-nowrap bg-black bg-opacity-40 px-1.5 py-0.5 rounded shadow-lg backdrop-blur-sm" 
+                             style="font-family: 'Microsoft JhengHei', 'PingFang TC', sans-serif;">
+                            ${d.name}
+                        </div>
+                    </div>
+                `;
+                // 綁定點擊事件
+                el.querySelector('.city-marker-content').onclick = (e) => {
+                    e.stopPropagation(); // 避免點擊時觸發地球拖曳
+                    handleCityClick(d);
+                };
+                return el;
+            });
+
+        // 設定初始視角與全手動控制
+        world.pointOfView({ lat: 23.5, lng: 121, altitude: 2.5 }); 
+        world.controls().autoRotate = false; 
+        world.controls().enableDamping = true; 
+
+        // 監聽滑鼠縮放與視角變動事件，動態調整 HTML 標籤大小
+        world.controls().addEventListener('change', () => {
+            const currentAlt = world.pointOfView().altitude;
+            // 重新計算動態縮放比例：設定嚴格的上下限
+            // Math.max(0.8, ...) 確保放大地球時，標籤縮小極限維持在 80% 大小，不會看不見
+            // Math.min(1.2, ...) 確保縮小地球時，標籤放大極限不會超過 120%，避免滿畫面都是字
+            const dynamicScale = Math.max(0.8, Math.min(1.2, currentAlt * 0.4));
+            
+            // 透過 CSS Transform 即時更新尺寸
+            document.querySelectorAll('.city-marker-content').forEach(el => {
+                el.style.transform = `translate(-50%, -50%) scale(${dynamicScale})`;
+            });
+        });
+
+        // 視窗縮放自動調整
+        window.addEventListener('resize', () => {
+            world.width(window.innerWidth);
+            world.height(window.innerHeight);
+        });
+
+        // 解析天氣代碼
+        function getWeatherDetails(code) {
+            if (code === 0) return { text: "晴天", icon: "sun", color: "text-yellow-400" };
+            if (code === 1 || code === 2 || code === 3) return { text: "多雲 / 陰天", icon: "cloud", color: "text-gray-300" };
+            if (code === 45 || code === 48) return { text: "有霧", icon: "cloud-fog", color: "text-gray-400" };
+            if (code >= 51 && code <= 55) return { text: "毛毛雨", icon: "cloud-drizzle", color: "text-blue-300" };
+            if (code >= 61 && code <= 65) return { text: "下雨", icon: "cloud-rain", color: "text-blue-400" };
+            if (code >= 71 && code <= 75) return { text: "下雪", icon: "snowflake", color: "text-white" };
+            if (code >= 95 && code <= 99) return { text: "雷陣雨", icon: "cloud-lightning", color: "text-yellow-500" };
+            return { text: "未知天氣", icon: "help-circle", color: "text-gray-400" };
+        }
+
+        const weatherPanel = document.getElementById('weather-panel');
+        const weatherContent = document.getElementById('weather-content');
+        const closeBtn = document.getElementById('close-btn');
+
+        // 改用 let 宣告，讓使用者可以在網頁上動態輸入金鑰
+        let userApiKey = ""; 
+
+        // API 重試機制
+        async function fetchWithRetry(url, options, retries = 5) {
+            let delay = 1000;
+            for (let i = 0; i < retries; i++) {
+                try {
+                    const response = await fetch(url, options);
+                    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                    return await response.json();
+                } catch (error) {
+                    if (i === retries - 1) throw error;
+                    await new Promise(res => setTimeout(res, delay));
+                    delay *= 2;
+                }
+            }
+        }
+
+        // 呼叫 Gemini 共用函數 (加入安全輸入機制)
+        async function callGeminiAPI(promptText) {
+            // 檢查是否已有 API Key，若無則跳出視窗要求輸入
+            if (!userApiKey) {
+                userApiKey = prompt("請輸入您的 Gemini API Key 以啟用 AI 智能導遊：\n（為保護資安，此金鑰僅會暫存在您的瀏覽器中，不會上傳）");
+                if (!userApiKey) {
+                    throw new Error("未輸入 API Key，取消操作。");
+                }
+            }
+
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${userApiKey}`;
+            const options = {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    contents: [{ parts: [{ text: promptText }] }]
+                })
+            };
+
+            const result = await fetchWithRetry(url, options);
+            return result.candidates?.[0]?.content?.parts?.[0]?.text || "無法獲取建議，請稍後再試。";
+        }
+
+        closeBtn.addEventListener('click', () => {
+            weatherPanel.classList.add('hidden');
+        });
+
+        // 點擊城市
+        async function handleCityClick(city) {
+            world.pointOfView({ lat: city.lat, lng: city.lng, altitude: 1.5 }, 1000);
+
+            weatherPanel.classList.remove('hidden');
+            weatherContent.innerHTML = `
+                <div class="flex flex-col items-center justify-center h-32 gap-3">
+                    <div class="spinner"></div>
+                    <p class="text-sm text-gray-300">正在獲取 ${city.name} 的天氣資料...</p>
+                </div>
+            `;
+
+            try {
+                const response = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${city.lat}&longitude=${city.lng}&current_weather=true&timezone=auto`);
+                const data = await response.json();
+                
+                if (data.current_weather) {
+                    const temp = data.current_weather.temperature;
+                    const windSpeed = data.current_weather.windspeed;
+                    const code = data.current_weather.weathercode;
+                    const weatherInfo = getWeatherDetails(code);
+
+                    weatherContent.innerHTML = `
+                        <div class="text-center">
+                            <h2 class="text-3xl font-bold mb-1 tracking-wider">${city.name}</h2>
+                            <p class="text-sm text-gray-400 mb-6">${city.country}</p>
+                            
+                            <div class="flex flex-col items-center justify-center mb-6">
+                                <i data-lucide="${weatherInfo.icon}" class="w-16 h-16 ${weatherInfo.color} mb-3"></i>
+                                <span class="text-xl font-medium">${weatherInfo.text}</span>
+                            </div>
+                            
+                            <div class="grid grid-cols-2 gap-4 text-left bg-black bg-opacity-30 rounded-xl p-4 mb-5">
+                                <div>
+                                    <p class="text-xs text-gray-400 mb-1 flex items-center gap-1"><i data-lucide="thermometer" class="w-3 h-3"></i> 溫度</p>
+                                    <p class="text-2xl font-bold">${temp}°C</p>
+                                </div>
+                                <div>
+                                    <p class="text-xs text-gray-400 mb-1 flex items-center gap-1"><i data-lucide="wind" class="w-3 h-3"></i> 風速</p>
+                                    <p class="text-2xl font-bold">${windSpeed} <span class="text-sm font-normal">km/h</span></p>
+                                </div>
+                            </div>
+
+                            <!-- 升級版 AI 智能導遊功能區塊 -->
+                            <div class="mt-2 pt-4 border-t border-gray-600/50">
+                                <p class="text-xs text-gray-400 mb-3 text-left flex items-center gap-1">
+                                    <i data-lucide="bot" class="w-4 h-4"></i> AI 智能導遊
+                                </p>
+                                <div class="flex flex-col gap-2.5">
+                                    <button id="ai-btn-outfit" class="w-full bg-white/5 hover:bg-white/10 border border-white/10 text-white text-sm font-medium py-2 px-3 rounded-lg transition-all flex items-center justify-center gap-2">
+                                        👕 穿搭與活動建議
+                                    </button>
+                                    <button id="ai-btn-food" class="w-full bg-white/5 hover:bg-white/10 border border-white/10 text-white text-sm font-medium py-2 px-3 rounded-lg transition-all flex items-center justify-center gap-2">
+                                        🍜 必吃在地美食
+                                    </button>
+                                    <button id="ai-btn-trip" class="w-full bg-gradient-to-r from-purple-500/80 to-indigo-600/80 hover:from-purple-500 hover:to-indigo-600 text-white text-sm font-medium py-2 px-3 rounded-lg transition-all shadow-lg flex items-center justify-center gap-2">
+                                        ✨ 天氣專屬半日遊
+                                    </button>
+                                </div>
+                                <div id="ai-result" class="mt-4 text-sm text-left text-gray-200 hidden bg-black/40 p-4 rounded-xl border border-purple-500/30 leading-relaxed shadow-inner max-h-48 overflow-y-auto custom-scrollbar"></div>
+                            </div>
+                        </div>
+                    `;
+                    lucide.createIcons();
+
+                    // 綁定三個 AI 按鈕事件
+                    const resultDiv = document.getElementById('ai-result');
+                    const aiBtnOutfit = document.getElementById('ai-btn-outfit');
+                    const aiBtnFood = document.getElementById('ai-btn-food');
+                    const aiBtnTrip = document.getElementById('ai-btn-trip');
+                    const allBtns = [aiBtnOutfit, aiBtnFood, aiBtnTrip];
+
+                    const handleAIAction = async (btn, promptText, prefix) => {
+                        allBtns.forEach(b => b.disabled = true);
+                        const originalHtml = btn.innerHTML;
+                        btn.innerHTML = `<div class="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div> 思考中...`;
+                        resultDiv.classList.add('hidden');
+
+                        try {
+                            const suggestion = await callGeminiAPI(promptText);
+                            const cleanSuggestion = suggestion.replace(/\*/g, '');
+                            resultDiv.innerHTML = `<strong class="text-purple-300">${prefix}</strong><br/><span class="mt-2 block text-gray-300">${cleanSuggestion}</span>`;
+                            resultDiv.classList.remove('hidden');
+                        } catch (error) {
+                            resultDiv.innerHTML = `<span class="text-red-400">獲取建議失敗，請檢查網路狀態或稍後再試。</span>`;
+                            resultDiv.classList.remove('hidden');
+                        } finally {
+                            allBtns.forEach(b => b.disabled = false);
+                            btn.innerHTML = originalHtml;
+                        }
+                    };
+
+                    if (aiBtnOutfit) {
+                        aiBtnOutfit.addEventListener('click', () => {
+                            const prompt = `現在 ${city.name} 的天氣是 ${weatherInfo.text}，氣溫 ${temp}°C。請用繁體中文給出一段簡短生動的旅行穿搭建議與適合的活動（限50字以內）。`;
+                            handleAIAction(aiBtnOutfit, prompt, "👕 穿搭與活動：");
+                        });
+                    }
+                    if (aiBtnFood) {
+                        aiBtnFood.addEventListener('click', () => {
+                            const prompt = `我現在在 ${city.name}，天氣是 ${weatherInfo.text}，氣溫 ${temp}°C。請用繁體中文推薦 3 道最適合現在天氣品嚐的當地特色美食，並附上簡短原因（限100字以內）。`;
+                            handleAIAction(aiBtnFood, prompt, "🍜 在地美食推薦：");
+                        });
+                    }
+                    if (aiBtnTrip) {
+                        aiBtnTrip.addEventListener('click', () => {
+                            const prompt = `我現在在 ${city.name}，天氣是 ${weatherInfo.text}，氣溫 ${temp}°C。請用繁體中文為我規劃一個適合這個天氣的半日遊行程，包含景點與交通方式（限150字以內）。`;
+                            handleAIAction(aiBtnTrip, prompt, "✨ 專屬半日遊行程：");
+                        });
+                    }
+
+                } else {
+                    throw new Error("找不到天氣資料");
+                }
+            } catch (error) {
+                console.error("API Error:", error);
+                weatherContent.innerHTML = `
+                    <div class="text-center text-red-400 mt-4">
+                        <i data-lucide="alert-circle" class="w-12 h-12 mx-auto mb-2"></i>
+                        <p>抱歉，無法取得 ${city.name} 的天氣資料。<br>請稍後再試。</p>
+                    </div>
+                `;
+                lucide.createIcons();
+            }
+        }
+    </script>
+</body>
+</html>
