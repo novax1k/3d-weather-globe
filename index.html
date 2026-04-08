@@ -408,13 +408,29 @@
                         } catch (error) {
                             // 將真實錯誤訊息顯示在獨立視窗中
                             console.error("Gemini API 發生錯誤:", error);
+                            
+                            // --- 新增：攔截並美化「超過配額 (Rate Limit / Quota Exceeded)」的錯誤訊息 ---
+                            let displayMessage = error.message;
+                            let actionButtonHtml = `
+                                <button onclick="localStorage.removeItem('gemini_api_key'); userApiKey=''; alert('金鑰已清除，請重新點擊 AI 按鈕輸入！'); document.getElementById('ai-modal').classList.add('hidden');" class="px-5 py-2 bg-red-500/20 hover:bg-red-500/40 border border-red-500/50 rounded-xl text-white text-sm transition-colors flex items-center gap-2">
+                                    <i data-lucide="key-round" class="w-4 h-4"></i> 清除並重設 API Key
+                                </button>
+                            `;
+
+                            if (error.message.toLowerCase().includes("quota") || error.message.includes("429")) {
+                                displayMessage = "請求太頻繁囉！免費版的 Gemini API 有每分鐘的請求次數限制。<br><br>這不是 Bug，您的金鑰也完全正常。請稍等約 1 分鐘，讓系統「冷卻」一下後再試一次！";
+                                actionButtonHtml = `
+                                    <button onclick="document.getElementById('ai-modal').classList.add('hidden');" class="px-5 py-2 bg-purple-500/20 hover:bg-purple-500/40 border border-purple-500/50 rounded-xl text-white text-sm transition-colors flex items-center gap-2">
+                                        <i data-lucide="timer" class="w-4 h-4"></i> 了解，休息一下再試
+                                    </button>
+                                `;
+                            }
+
                             aiModalContent.innerHTML = `
                                 <h3 class="text-xl font-bold text-red-400 mb-4 flex items-center gap-2"><i data-lucide="alert-triangle"></i> 發生錯誤</h3>
-                                <p class="text-red-300 text-sm mb-6 break-words bg-red-900/20 p-3 rounded-lg border border-red-500/30">${error.message}</p>
+                                <p class="text-red-300 text-sm mb-6 break-words bg-red-900/20 p-3 rounded-lg border border-red-500/30">${displayMessage}</p>
                                 <div class="flex justify-center">
-                                    <button onclick="localStorage.removeItem('gemini_api_key'); userApiKey=''; alert('金鑰已清除，請重新點擊 AI 按鈕輸入！'); document.getElementById('ai-modal').classList.add('hidden');" class="px-5 py-2 bg-red-500/20 hover:bg-red-500/40 border border-red-500/50 rounded-xl text-white text-sm transition-colors flex items-center gap-2">
-                                        <i data-lucide="key-round" class="w-4 h-4"></i> 清除並重設 API Key
-                                    </button>
+                                    ${actionButtonHtml}
                                 </div>
                             `;
                             lucide.createIcons();
