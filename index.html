@@ -201,8 +201,8 @@
                 }
             }
 
-            // 【重要修改】加上 -latest 後綴，確保 Google 伺服器能正確找到模型
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${userApiKey}`;
+            // 【重要修改】根據 2026 最新官方文件，全面升級為 Gemini 3 系列模型
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${userApiKey}`;
             const options = {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
