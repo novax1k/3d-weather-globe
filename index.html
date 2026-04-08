@@ -237,8 +237,8 @@
         const weatherContent = document.getElementById('weather-content');
         const closeBtn = document.getElementById('close-btn');
 
-        // 改用 let 宣告，讓使用者可以在網頁上動態輸入金鑰
-        let userApiKey = ""; 
+        // 改為優先從瀏覽器的 localStorage 讀取金鑰
+        let userApiKey = localStorage.getItem('gemini_api_key') || ""; 
 
         // API 重試機制 (強化錯誤處理，抓取真實錯誤訊息)
         async function fetchWithRetry(url, options, retries = 5) {
@@ -260,14 +260,16 @@
             }
         }
 
-        // 呼叫 Gemini 共用函數 (加入安全輸入機制)
+        // 呼叫 Gemini 共用函數 (加入安全輸入機制與本地儲存)
         async function callGeminiAPI(promptText) {
             // 檢查是否已有 API Key，若無則跳出視窗要求輸入
             if (!userApiKey) {
-                userApiKey = prompt("請輸入您的 Gemini API Key 以啟用 AI 智能導遊：\n（為保護資安，此金鑰僅會暫存在您的瀏覽器中，不會上傳）");
+                userApiKey = prompt("請輸入您的 Gemini API Key 以啟用 AI 智能導遊：\n（為保護資安，此金鑰僅會保存在您目前瀏覽器的本地儲存空間，不會上傳外洩）");
                 if (!userApiKey) {
                     throw new Error("未輸入 API Key，取消操作。");
                 }
+                // 將使用者輸入的金鑰存入 localStorage，下次重新整理就不必再輸入
+                localStorage.setItem('gemini_api_key', userApiKey);
             }
 
             // 【重要修改】根據 2026 最新官方文件，全面升級為 Gemini 3 系列模型
@@ -377,7 +379,7 @@
                             resultDiv.innerHTML = `
                                 <span class="text-red-400 font-bold">⚠️ 發生錯誤：</span><br/>
                                 <span class="text-red-300 text-xs mt-1 block break-words">${error.message}</span>
-                                <button onclick="userApiKey=''; alert('金鑰已清除，請重新點擊按鈕輸入');" class="mt-2 text-xs text-gray-400 underline hover:text-white">點此清除重設 API Key</button>
+                                <button onclick="localStorage.removeItem('gemini_api_key'); userApiKey=''; alert('金鑰已清除，請重新點擊按鈕輸入');" class="mt-2 text-xs text-gray-400 underline hover:text-white">點此清除重設 API Key</button>
                             `;
                             resultDiv.classList.remove('hidden');
                         } finally {
