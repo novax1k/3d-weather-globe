@@ -76,23 +76,56 @@
 
         lucide.createIcons();
 
-        // 城市資料庫
+        // 城市資料庫：擴充全球各大洲重要城市
         const cities = [
+            // 台灣與東亞
             { name: "台北", lat: 25.0330, lng: 121.5654, country: "台灣" },
             { name: "新竹", lat: 24.8138, lng: 120.9675, country: "台灣" },
             { name: "苗栗", lat: 24.5648, lng: 120.8206, country: "台灣" },
             { name: "台中", lat: 24.1477, lng: 120.6736, country: "台灣" },
             { name: "東京", lat: 35.6762, lng: 139.6503, country: "日本" },
             { name: "首爾", lat: 37.5665, lng: 126.9780, country: "韓國" },
-            { name: "紐約", lat: 40.7128, lng: -74.0060, country: "美國" },
-            { name: "洛杉磯", lat: 34.0522, lng: -118.2437, country: "美國" },
-            { name: "倫敦", lat: 51.5074, lng: -0.1278, country: "英國" },
-            { name: "巴黎", lat: 48.8566, lng: 2.3522, country: "法國" },
-            { name: "雪梨", lat: -33.8688, lng: 151.2093, country: "澳洲" },
+            
+            // 中國
+            { name: "北京", lat: 39.9042, lng: 116.4074, country: "中國" },
+            { name: "上海", lat: 31.2304, lng: 121.4737, country: "中國" },
+            { name: "廣州", lat: 23.1291, lng: 113.2644, country: "中國" },
+            
+            // 俄羅斯
+            { name: "莫斯科", lat: 55.7558, lng: 37.6173, country: "俄羅斯" },
+            { name: "聖彼得堡", lat: 59.9343, lng: 30.3351, country: "俄羅斯" },
+            
+            // 亞洲其他
             { name: "新加坡", lat: 1.3521, lng: 103.8198, country: "新加坡" },
             { name: "杜拜", lat: 25.2048, lng: 55.2708, country: "阿聯酋" },
+            { name: "曼谷", lat: 13.7563, lng: 100.5018, country: "泰國" },
+            
+            // 歐洲
+            { name: "倫敦", lat: 51.5074, lng: -0.1278, country: "英國" },
+            { name: "巴黎", lat: 48.8566, lng: 2.3522, country: "法國" },
+            { name: "柏林", lat: 52.5200, lng: 13.4050, country: "德國" },
+            { name: "羅馬", lat: 41.9028, lng: 12.4964, country: "義大利" },
+            { name: "馬德里", lat: 40.4168, lng: -3.7038, country: "西班牙" },
+            { name: "雷克雅維克", lat: 64.1466, lng: -21.9426, country: "冰島" },
+            
+            // 北美洲
+            { name: "紐約", lat: 40.7128, lng: -74.0060, country: "美國" },
+            { name: "洛杉磯", lat: 34.0522, lng: -118.2437, country: "美國" },
+            { name: "多倫多", lat: 43.6510, lng: -79.3470, country: "加拿大" },
+            
+            // 南美洲
+            { name: "聖保羅", lat: -23.5505, lng: -46.6333, country: "巴西" },
+            { name: "布宜諾斯艾利斯", lat: -34.6037, lng: -58.3816, country: "阿根廷" },
+            { name: "里約熱內盧", lat: -22.9068, lng: -43.1729, country: "巴西" },
+            
+            // 非洲
             { name: "開普敦", lat: -33.9249, lng: 18.4241, country: "南非" },
-            { name: "雷克雅維克", lat: 64.1466, lng: -21.9426, country: "冰島" }
+            { name: "開羅", lat: 30.0444, lng: 31.2357, country: "埃及" },
+            { name: "奈洛比", lat: -1.2921, lng: 36.8219, country: "肯亞" },
+            
+            // 大洋洲
+            { name: "雪梨", lat: -33.8688, lng: 151.2093, country: "澳洲" },
+            { name: "奧克蘭", lat: -36.8485, lng: 174.7633, country: "紐西蘭" }
         ];
 
         // 建立 3D 地球實例
