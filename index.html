@@ -76,6 +76,18 @@
         </div>
     </div>
 
+    <!-- AI 結果獨立彈出視窗 (新增) -->
+    <div id="ai-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden bg-black/60 backdrop-blur-sm transition-opacity duration-300">
+        <div class="glass-panel w-11/12 max-w-lg rounded-2xl p-8 relative flex flex-col max-h-[80vh] border border-purple-500/30 shadow-[0_0_30px_rgba(168,85,247,0.2)]">
+            <button id="close-ai-modal-btn" class="absolute top-4 right-4 text-gray-300 hover:text-white transition-colors">
+                <i data-lucide="x" class="w-6 h-6"></i>
+            </button>
+            <div id="ai-modal-content" class="overflow-y-auto custom-scrollbar pr-2 mt-2">
+                <!-- 動態插入 AI 回應 -->
+            </div>
+        </div>
+    </div>
+
     <script>
         const apiKey = ""; // 供環境自動注入 API Key
 
@@ -236,6 +248,11 @@
         const weatherPanel = document.getElementById('weather-panel');
         const weatherContent = document.getElementById('weather-content');
         const closeBtn = document.getElementById('close-btn');
+        
+        // 新增 AI 獨立視窗的 DOM 元素
+        const aiModal = document.getElementById('ai-modal');
+        const aiModalContent = document.getElementById('ai-modal-content');
+        const closeAiModalBtn = document.getElementById('close-ai-modal-btn');
 
         // 改為優先從瀏覽器的 localStorage 讀取金鑰
         let userApiKey = localStorage.getItem('gemini_api_key') || ""; 
@@ -288,6 +305,11 @@
 
         closeBtn.addEventListener('click', () => {
             weatherPanel.classList.add('hidden');
+        });
+
+        // 綁定關閉 AI 獨立視窗事件
+        closeAiModalBtn.addEventListener('click', () => {
+            aiModal.classList.add('hidden');
         });
 
         // 點擊城市
@@ -349,14 +371,12 @@
                                         ✨ 天氣專屬半日遊
                                     </button>
                                 </div>
-                                <div id="ai-result" class="mt-4 text-sm text-left text-gray-200 hidden bg-black/40 p-4 rounded-xl border border-purple-500/30 leading-relaxed shadow-inner max-h-48 overflow-y-auto custom-scrollbar"></div>
                             </div>
                         </div>
                     `;
                     lucide.createIcons();
 
                     // 綁定三個 AI 按鈕事件
-                    const resultDiv = document.getElementById('ai-result');
                     const aiBtnOutfit = document.getElementById('ai-btn-outfit');
                     const aiBtnFood = document.getElementById('ai-btn-food');
                     const aiBtnTrip = document.getElementById('ai-btn-trip');
@@ -365,28 +385,39 @@
                     const handleAIAction = async (btn, promptText, prefix) => {
                         allBtns.forEach(b => b.disabled = true);
                         const originalHtml = btn.innerHTML;
-                        btn.innerHTML = `<div class="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div> 思考中...`;
-                        resultDiv.classList.add('hidden');
+                        btn.innerHTML = `<div class="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div> 載入中...`;
+                        
+                        // 關鍵修改：開啟獨立視窗並顯示載入中狀態
+                        aiModal.classList.remove('hidden');
+                        aiModalContent.innerHTML = `
+                            <div class="flex flex-col items-center justify-center h-48 gap-4">
+                                <div class="spinner border-purple-400 border-t-white"></div>
+                                <p class="text-sm text-purple-200 animate-pulse">正在為您構思 ${prefix.replace(/[:：]/g, '')} ...</p>
+                            </div>
+                        `;
 
                         try {
                             const suggestion = await callGeminiAPI(promptText);
-                            // 移除 Markdown 的粗體符號 (**)，但保留原本的條列式星號 (*)
                             const cleanSuggestion = suggestion.replace(/\*\*/g, '');
-                            // 關鍵修改：加入 whitespace-pre-wrap 讓 HTML 認識換行，並加大字距讓閱讀更舒適
-                            resultDiv.innerHTML = `
-                                <strong class="text-purple-300 text-base">${prefix}</strong>
-                                <div class="mt-3 text-gray-200 whitespace-pre-wrap leading-relaxed tracking-wide">${cleanSuggestion}</div>
+                            
+                            // 更新獨立視窗內容為 AI 回覆
+                            aiModalContent.innerHTML = `
+                                <h3 class="text-2xl font-bold text-purple-300 mb-4 pb-2 border-b border-purple-500/30 tracking-wide">${prefix.replace(/[:：]/g, '')}</h3>
+                                <div class="mt-2 text-gray-100 whitespace-pre-wrap leading-relaxed tracking-wide text-base">${cleanSuggestion}</div>
                             `;
-                            resultDiv.classList.remove('hidden');
                         } catch (error) {
-                            // 將真實錯誤訊息顯示在畫面上，方便除錯
+                            // 將真實錯誤訊息顯示在獨立視窗中
                             console.error("Gemini API 發生錯誤:", error);
-                            resultDiv.innerHTML = `
-                                <span class="text-red-400 font-bold">⚠️ 發生錯誤：</span><br/>
-                                <span class="text-red-300 text-xs mt-1 block break-words">${error.message}</span>
-                                <button onclick="localStorage.removeItem('gemini_api_key'); userApiKey=''; alert('金鑰已清除，請重新點擊按鈕輸入');" class="mt-2 text-xs text-gray-400 underline hover:text-white">點此清除重設 API Key</button>
+                            aiModalContent.innerHTML = `
+                                <h3 class="text-xl font-bold text-red-400 mb-4 flex items-center gap-2"><i data-lucide="alert-triangle"></i> 發生錯誤</h3>
+                                <p class="text-red-300 text-sm mb-6 break-words bg-red-900/20 p-3 rounded-lg border border-red-500/30">${error.message}</p>
+                                <div class="flex justify-center">
+                                    <button onclick="localStorage.removeItem('gemini_api_key'); userApiKey=''; alert('金鑰已清除，請重新點擊 AI 按鈕輸入！'); document.getElementById('ai-modal').classList.add('hidden');" class="px-5 py-2 bg-red-500/20 hover:bg-red-500/40 border border-red-500/50 rounded-xl text-white text-sm transition-colors flex items-center gap-2">
+                                        <i data-lucide="key-round" class="w-4 h-4"></i> 清除並重設 API Key
+                                    </button>
+                                </div>
                             `;
-                            resultDiv.classList.remove('hidden');
+                            lucide.createIcons();
                         } finally {
                             allBtns.forEach(b => b.disabled = false);
                             btn.innerHTML = originalHtml;
