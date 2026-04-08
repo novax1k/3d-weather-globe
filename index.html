@@ -76,56 +76,78 @@
 
         lucide.createIcons();
 
-        // 城市資料庫：擴充全球各大洲重要城市
+        // 城市資料庫：擴充全球各大洲重要城市，並加入英文名稱
         const cities = [
             // 台灣與東亞
-            { name: "台北", lat: 25.0330, lng: 121.5654, country: "台灣" },
-            { name: "新竹", lat: 24.8138, lng: 120.9675, country: "台灣" },
-            { name: "苗栗", lat: 24.5648, lng: 120.8206, country: "台灣" },
-            { name: "台中", lat: 24.1477, lng: 120.6736, country: "台灣" },
-            { name: "東京", lat: 35.6762, lng: 139.6503, country: "日本" },
-            { name: "首爾", lat: 37.5665, lng: 126.9780, country: "韓國" },
+            { name: "台北", nameEn: "Taipei", lat: 25.0330, lng: 121.5654, country: "台灣", countryEn: "Taiwan" },
+            { name: "新竹", nameEn: "Hsinchu", lat: 24.8138, lng: 120.9675, country: "台灣", countryEn: "Taiwan" },
+            { name: "苗栗", nameEn: "Miaoli", lat: 24.5648, lng: 120.8206, country: "台灣", countryEn: "Taiwan" },
+            { name: "台中", nameEn: "Taichung", lat: 24.1477, lng: 120.6736, country: "台灣", countryEn: "Taiwan" },
+            { name: "東京", nameEn: "Tokyo", lat: 35.6762, lng: 139.6503, country: "日本", countryEn: "Japan" },
+            { name: "首爾", nameEn: "Seoul", lat: 37.5665, lng: 126.9780, country: "韓國", countryEn: "South Korea" },
             
             // 中國
-            { name: "北京", lat: 39.9042, lng: 116.4074, country: "中國" },
-            { name: "上海", lat: 31.2304, lng: 121.4737, country: "中國" },
-            { name: "廣州", lat: 23.1291, lng: 113.2644, country: "中國" },
+            { name: "北京", nameEn: "Beijing", lat: 39.9042, lng: 116.4074, country: "中國", countryEn: "China" },
+            { name: "上海", nameEn: "Shanghai", lat: 31.2304, lng: 121.4737, country: "中國", countryEn: "China" },
+            { name: "廣州", nameEn: "Guangzhou", lat: 23.1291, lng: 113.2644, country: "中國", countryEn: "China" },
+            { name: "烏魯木齊", nameEn: "Urumqi", lat: 43.8256, lng: 87.6168, country: "中國", countryEn: "China" }, // 填補中亞交界
             
-            // 俄羅斯
-            { name: "莫斯科", lat: 55.7558, lng: 37.6173, country: "俄羅斯" },
-            { name: "聖彼得堡", lat: 59.9343, lng: 30.3351, country: "俄羅斯" },
+            // 北亞與俄羅斯
+            { name: "莫斯科", nameEn: "Moscow", lat: 55.7558, lng: 37.6173, country: "俄羅斯", countryEn: "Russia" },
+            { name: "聖彼得堡", nameEn: "St. Petersburg", lat: 59.9343, lng: 30.3351, country: "俄羅斯", countryEn: "Russia" },
+            { name: "新西伯利亞", nameEn: "Novosibirsk", lat: 55.0084, lng: 82.9357, country: "俄羅斯", countryEn: "Russia" }, // 填補西伯利亞
+            { name: "海參崴", nameEn: "Vladivostok", lat: 43.1198, lng: 131.8869, country: "俄羅斯", countryEn: "Russia" }, // 填補遠東
             
-            // 亞洲其他
-            { name: "新加坡", lat: 1.3521, lng: 103.8198, country: "新加坡" },
-            { name: "杜拜", lat: 25.2048, lng: 55.2708, country: "阿聯酋" },
-            { name: "曼谷", lat: 13.7563, lng: 100.5018, country: "泰國" },
+            // 中亞、西亞與南亞
+            { name: "塔什干", nameEn: "Tashkent", lat: 41.2995, lng: 69.2401, country: "烏茲別克", countryEn: "Uzbekistan" }, // 填補中亞
+            { name: "新德里", nameEn: "New Delhi", lat: 28.6139, lng: 77.2090, country: "印度", countryEn: "India" },
+            { name: "孟買", nameEn: "Mumbai", lat: 19.0760, lng: 72.8777, country: "印度", countryEn: "India" },
+            { name: "德黑蘭", nameEn: "Tehran", lat: 35.6892, lng: 51.3890, country: "伊朗", countryEn: "Iran" },
+            { name: "利雅德", nameEn: "Riyadh", lat: 24.7136, lng: 46.6753, country: "沙烏地阿拉伯", countryEn: "Saudi Arabia" },
+            { name: "杜拜", nameEn: "Dubai", lat: 25.2048, lng: 55.2708, country: "阿聯酋", countryEn: "UAE" },
+            { name: "伊斯坦堡", nameEn: "Istanbul", lat: 41.0082, lng: 28.9784, country: "土耳其", countryEn: "Turkey" },
+            
+            // 東南亞
+            { name: "新加坡", nameEn: "Singapore", lat: 1.3521, lng: 103.8198, country: "新加坡", countryEn: "Singapore" },
+            { name: "曼谷", nameEn: "Bangkok", lat: 13.7563, lng: 100.5018, country: "泰國", countryEn: "Thailand" },
+            { name: "雅加達", nameEn: "Jakarta", lat: -6.2088, lng: 106.8456, country: "印尼", countryEn: "Indonesia" },
             
             // 歐洲
-            { name: "倫敦", lat: 51.5074, lng: -0.1278, country: "英國" },
-            { name: "巴黎", lat: 48.8566, lng: 2.3522, country: "法國" },
-            { name: "柏林", lat: 52.5200, lng: 13.4050, country: "德國" },
-            { name: "羅馬", lat: 41.9028, lng: 12.4964, country: "義大利" },
-            { name: "馬德里", lat: 40.4168, lng: -3.7038, country: "西班牙" },
-            { name: "雷克雅維克", lat: 64.1466, lng: -21.9426, country: "冰島" },
+            { name: "倫敦", nameEn: "London", lat: 51.5074, lng: -0.1278, country: "英國", countryEn: "UK" },
+            { name: "巴黎", nameEn: "Paris", lat: 48.8566, lng: 2.3522, country: "法國", countryEn: "France" },
+            { name: "柏林", nameEn: "Berlin", lat: 52.5200, lng: 13.4050, country: "德國", countryEn: "Germany" },
+            { name: "羅馬", nameEn: "Rome", lat: 41.9028, lng: 12.4964, country: "義大利", countryEn: "Italy" },
+            { name: "馬德里", nameEn: "Madrid", lat: 40.4168, lng: -3.7038, country: "西班牙", countryEn: "Spain" },
+            { name: "基輔", nameEn: "Kyiv", lat: 50.4501, lng: 30.5234, country: "烏克蘭", countryEn: "Ukraine" }, // 填補東歐
+            { name: "雷克雅維克", nameEn: "Reykjavik", lat: 64.1466, lng: -21.9426, country: "冰島", countryEn: "Iceland" },
             
             // 北美洲
-            { name: "紐約", lat: 40.7128, lng: -74.0060, country: "美國" },
-            { name: "洛杉磯", lat: 34.0522, lng: -118.2437, country: "美國" },
-            { name: "多倫多", lat: 43.6510, lng: -79.3470, country: "加拿大" },
+            { name: "紐約", nameEn: "New York", lat: 40.7128, lng: -74.0060, country: "美國", countryEn: "USA" },
+            { name: "洛杉磯", nameEn: "Los Angeles", lat: 34.0522, lng: -118.2437, country: "美國", countryEn: "USA" },
+            { name: "多倫多", nameEn: "Toronto", lat: 43.6510, lng: -79.3470, country: "加拿大", countryEn: "Canada" },
+            { name: "墨西哥城", nameEn: "Mexico City", lat: 19.4326, lng: -99.1332, country: "墨西哥", countryEn: "Mexico" }, // 填補中美洲
             
             // 南美洲
-            { name: "聖保羅", lat: -23.5505, lng: -46.6333, country: "巴西" },
-            { name: "布宜諾斯艾利斯", lat: -34.6037, lng: -58.3816, country: "阿根廷" },
-            { name: "里約熱內盧", lat: -22.9068, lng: -43.1729, country: "巴西" },
+            { name: "聖保羅", nameEn: "São Paulo", lat: -23.5505, lng: -46.6333, country: "巴西", countryEn: "Brazil" },
+            { name: "里約熱內盧", nameEn: "Rio de Janeiro", lat: -22.9068, lng: -43.1729, country: "巴西", countryEn: "Brazil" },
+            { name: "瑪瑙斯", nameEn: "Manaus", lat: -3.1190, lng: -60.0217, country: "巴西", countryEn: "Brazil" }, // 填補亞馬遜雨林區
+            { name: "布宜諾斯艾利斯", nameEn: "Buenos Aires", lat: -34.6037, lng: -58.3816, country: "阿根廷", countryEn: "Argentina" },
+            { name: "聖地牙哥", nameEn: "Santiago", lat: -33.4489, lng: -70.6693, country: "智利", countryEn: "Chile" }, // 填補安地斯山脈西側
+            { name: "波哥大", nameEn: "Bogotá", lat: 4.7110, lng: -74.0721, country: "哥倫比亞", countryEn: "Colombia" }, // 填補南美北部
             
             // 非洲
-            { name: "開普敦", lat: -33.9249, lng: 18.4241, country: "南非" },
-            { name: "開羅", lat: 30.0444, lng: 31.2357, country: "埃及" },
-            { name: "奈洛比", lat: -1.2921, lng: 36.8219, country: "肯亞" },
+            { name: "開羅", nameEn: "Cairo", lat: 30.0444, lng: 31.2357, country: "埃及", countryEn: "Egypt" },
+            { name: "卡薩布蘭卡", nameEn: "Casablanca", lat: 33.5731, lng: -7.5898, country: "摩洛哥", countryEn: "Morocco" }, // 填補西北非
+            { name: "拉哥斯", nameEn: "Lagos", lat: 6.5244, lng: 3.3792, country: "奈及利亞", countryEn: "Nigeria" }, // 填補西非
+            { name: "金夏沙", nameEn: "Kinshasa", lat: -4.4419, lng: 15.2663, country: "剛果民主共和國", countryEn: "DRC" }, // 填補中非
+            { name: "阿迪斯阿貝巴", nameEn: "Addis Ababa", lat: 9.0320, lng: 38.7482, country: "衣索比亞", countryEn: "Ethiopia" }, // 填補東非
+            { name: "奈洛比", nameEn: "Nairobi", lat: -1.2921, lng: 36.8219, country: "肯亞", countryEn: "Kenya" },
+            { name: "約翰尼斯堡", nameEn: "Johannesburg", lat: -26.2041, lng: 28.0473, country: "南非", countryEn: "South Africa" },
+            { name: "開普敦", nameEn: "Cape Town", lat: -33.9249, lng: 18.4241, country: "南非", countryEn: "South Africa" },
             
             // 大洋洲
-            { name: "雪梨", lat: -33.8688, lng: 151.2093, country: "澳洲" },
-            { name: "奧克蘭", lat: -36.8485, lng: 174.7633, country: "紐西蘭" }
+            { name: "雪梨", nameEn: "Sydney", lat: -33.8688, lng: 151.2093, country: "澳洲", countryEn: "Australia" },
+            { name: "奧克蘭", nameEn: "Auckland", lat: -36.8485, lng: 174.7633, country: "紐西蘭", countryEn: "New Zealand" }
         ];
 
         // 建立 3D 地球實例
@@ -141,14 +163,14 @@
             .htmlAltitude(0.01)
             .htmlElement(d => {
                 const el = document.createElement('div');
-                // DOM 元素的 UI 設計
+                // DOM 元素的 UI 設計，加入英文名稱顯示
                 el.innerHTML = `
                     <div class="city-marker-content flex flex-col items-center absolute cursor-pointer hover:scale-110 transition-transform duration-200" 
                          style="left: 0; top: 0; transform: translate(-50%, -50%) scale(1); pointer-events: auto;">
                         <div class="w-2.5 h-2.5 bg-orange-400 rounded-full shadow-[0_0_12px_2px_rgba(255,165,0,0.9)] mb-1"></div>
-                        <div class="text-orange-400 font-bold text-sm whitespace-nowrap bg-black bg-opacity-40 px-1.5 py-0.5 rounded shadow-lg backdrop-blur-sm" 
+                        <div class="text-orange-400 font-bold text-sm whitespace-nowrap bg-black bg-opacity-40 px-1.5 py-0.5 rounded shadow-lg backdrop-blur-sm text-center" 
                              style="font-family: 'Microsoft JhengHei', 'PingFang TC', sans-serif;">
-                            ${d.name}
+                            ${d.name} <span class="text-[10px] text-orange-200/80 font-normal ml-1">${d.nameEn}</span>
                         </div>
                     </div>
                 `;
@@ -276,8 +298,8 @@
 
                     weatherContent.innerHTML = `
                         <div class="text-center">
-                            <h2 class="text-3xl font-bold mb-1 tracking-wider">${city.name}</h2>
-                            <p class="text-sm text-gray-400 mb-6">${city.country}</p>
+                            <h2 class="text-3xl font-bold mb-1 tracking-wider">${city.name} <span class="text-xl font-normal text-gray-300">${city.nameEn}</span></h2>
+                            <p class="text-sm text-gray-400 mb-6">${city.country} / ${city.countryEn}</p>
                             
                             <div class="flex flex-col items-center justify-center mb-6">
                                 <i data-lucide="${weatherInfo.icon}" class="w-16 h-16 ${weatherInfo.color} mb-3"></i>
@@ -352,19 +374,19 @@
 
                     if (aiBtnOutfit) {
                         aiBtnOutfit.addEventListener('click', () => {
-                            const prompt = `現在 ${city.name} 的天氣是 ${weatherInfo.text}，氣溫 ${temp}°C。請用繁體中文給出一段簡短生動的旅行穿搭建議與適合的活動（限50字以內）。`;
+                            const prompt = `現在 ${city.country}(${city.countryEn}) 的 ${city.name}(${city.nameEn}) 天氣是 ${weatherInfo.text}，氣溫 ${temp}°C。請用繁體中文給出一段簡短生動的旅行穿搭建議與適合的活動（限50字以內）。`;
                             handleAIAction(aiBtnOutfit, prompt, "👕 穿搭與活動：");
                         });
                     }
                     if (aiBtnFood) {
                         aiBtnFood.addEventListener('click', () => {
-                            const prompt = `我現在在 ${city.name}，天氣是 ${weatherInfo.text}，氣溫 ${temp}°C。請用繁體中文推薦 3 道最適合現在天氣品嚐的當地特色美食，並附上簡短原因（限100字以內）。`;
+                            const prompt = `我現在在 ${city.country}(${city.countryEn}) 的 ${city.name}(${city.nameEn})，天氣是 ${weatherInfo.text}，氣溫 ${temp}°C。請用繁體中文推薦 3 道最適合現在天氣品嚐的當地特色美食，並附上簡短原因（限100字以內）。`;
                             handleAIAction(aiBtnFood, prompt, "🍜 在地美食推薦：");
                         });
                     }
                     if (aiBtnTrip) {
                         aiBtnTrip.addEventListener('click', () => {
-                            const prompt = `我現在在 ${city.name}，天氣是 ${weatherInfo.text}，氣溫 ${temp}°C。請用繁體中文為我規劃一個適合這個天氣的半日遊行程，包含景點與交通方式（限150字以內）。`;
+                            const prompt = `我現在在 ${city.country}(${city.countryEn}) 的 ${city.name}(${city.nameEn})，天氣是 ${weatherInfo.text}，氣溫 ${temp}°C。請用繁體中文為我規劃一個適合這個天氣的半日遊行程，包含景點與交通方式（限150字以內）。`;
                             handleAIAction(aiBtnTrip, prompt, "✨ 專屬半日遊行程：");
                         });
                     }
