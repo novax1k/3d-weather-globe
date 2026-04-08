@@ -201,8 +201,8 @@
                 }
             }
 
-            // 【重要修改】將內部預覽版模型更改為一般使用者皆可呼叫的公開穩定版：gemini-1.5-flash
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${userApiKey}`;
+            // 【重要修改】加上 -latest 後綴，確保 Google 伺服器能正確找到模型
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${userApiKey}`;
             const options = {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
