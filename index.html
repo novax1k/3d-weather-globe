@@ -370,8 +370,13 @@
 
                         try {
                             const suggestion = await callGeminiAPI(promptText);
-                            const cleanSuggestion = suggestion.replace(/\*/g, '');
-                            resultDiv.innerHTML = `<strong class="text-purple-300">${prefix}</strong><br/><span class="mt-2 block text-gray-300">${cleanSuggestion}</span>`;
+                            // 移除 Markdown 的粗體符號 (**)，但保留原本的條列式星號 (*)
+                            const cleanSuggestion = suggestion.replace(/\*\*/g, '');
+                            // 關鍵修改：加入 whitespace-pre-wrap 讓 HTML 認識換行，並加大字距讓閱讀更舒適
+                            resultDiv.innerHTML = `
+                                <strong class="text-purple-300 text-base">${prefix}</strong>
+                                <div class="mt-3 text-gray-200 whitespace-pre-wrap leading-relaxed tracking-wide">${cleanSuggestion}</div>
+                            `;
                             resultDiv.classList.remove('hidden');
                         } catch (error) {
                             // 將真實錯誤訊息顯示在畫面上，方便除錯
@@ -390,19 +395,19 @@
 
                     if (aiBtnOutfit) {
                         aiBtnOutfit.addEventListener('click', () => {
-                            const prompt = `現在 ${city.country}(${city.countryEn}) 的 ${city.name}(${city.nameEn}) 天氣是 ${weatherInfo.text}，氣溫 ${temp}°C。請用繁體中文給出一段簡短生動的旅行穿搭建議與適合的活動（限50字以內）。`;
+                            const prompt = `現在 ${city.country}(${city.countryEn}) 的 ${city.name}(${city.nameEn}) 天氣是 ${weatherInfo.text}，氣溫 ${temp}°C。請用繁體中文給出一段簡短生動的旅行穿搭建議與適合的活動（限50字以內，請分段落說明）。`;
                             handleAIAction(aiBtnOutfit, prompt, "👕 穿搭與活動：");
                         });
                     }
                     if (aiBtnFood) {
                         aiBtnFood.addEventListener('click', () => {
-                            const prompt = `我現在在 ${city.country}(${city.countryEn}) 的 ${city.name}(${city.nameEn})，天氣是 ${weatherInfo.text}，氣溫 ${temp}°C。請用繁體中文推薦 3 道最適合現在天氣品嚐的當地特色美食，並附上簡短原因（限100字以內）。`;
+                            const prompt = `我現在在 ${city.country}(${city.countryEn}) 的 ${city.name}(${city.nameEn})，天氣是 ${weatherInfo.text}，氣溫 ${temp}°C。請用繁體中文推薦 3 道最適合現在天氣品嚐的當地特色美食，並附上簡短原因（限100字以內，請以條列式並分段呈現）。`;
                             handleAIAction(aiBtnFood, prompt, "🍜 在地美食推薦：");
                         });
                     }
                     if (aiBtnTrip) {
                         aiBtnTrip.addEventListener('click', () => {
-                            const prompt = `我現在在 ${city.country}(${city.countryEn}) 的 ${city.name}(${city.nameEn})，天氣是 ${weatherInfo.text}，氣溫 ${temp}°C。請用繁體中文為我規劃一個適合這個天氣的半日遊行程，包含景點與交通方式（限150字以內）。`;
+                            const prompt = `我現在在 ${city.country}(${city.countryEn}) 的 ${city.name}(${city.nameEn})，天氣是 ${weatherInfo.text}，氣溫 ${temp}°C。請用繁體中文為我規劃一個適合這個天氣的半日遊行程，包含景點與交通方式（限150字以內，請務必分段或條列說明，排版清晰易讀）。`;
                             handleAIAction(aiBtnTrip, prompt, "✨ 專屬半日遊行程：");
                         });
                     }
