@@ -57,7 +57,12 @@
         <p class="text-sm text-gray-300">拖曳以旋轉地球，點擊城市查看即時天氣</p>
     </div>
 
-    <!-- 定位按鈕 (新增) -->
+    <!-- 設定按鈕 (右上角) -->
+    <button id="settings-btn" class="absolute top-6 right-6 z-10 glass-panel p-3 rounded-full hover:bg-white/20 transition-all text-white shadow-lg hover:scale-110">
+        <i data-lucide="settings"></i>
+    </button>
+
+    <!-- 定位按鈕 -->
     <button id="locate-btn" class="absolute bottom-8 right-8 z-10 glass-panel px-4 py-3 rounded-full flex items-center gap-2 hover:bg-white/20 transition-all text-white font-medium shadow-lg hover:scale-105">
         <i data-lucide="navigation"></i> <span class="hidden sm:inline">我的位置</span>
     </button>
@@ -76,7 +81,7 @@
         </div>
     </div>
 
-    <!-- AI 結果獨立彈出視窗 (新增) -->
+    <!-- AI 結果獨立彈出視窗 -->
     <div id="ai-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden bg-black/60 backdrop-blur-sm transition-opacity duration-300">
         <div class="glass-panel w-11/12 max-w-lg rounded-2xl p-8 relative flex flex-col max-h-[80vh] border border-purple-500/30 shadow-[0_0_30px_rgba(168,85,247,0.2)]">
             <button id="close-ai-modal-btn" class="absolute top-4 right-4 text-gray-300 hover:text-white transition-colors">
@@ -84,6 +89,24 @@
             </button>
             <div id="ai-modal-content" class="overflow-y-auto custom-scrollbar pr-2 mt-2">
                 <!-- 動態插入 AI 回應 -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 設定介面彈出視窗 (取代原本的 prompt) -->
+    <div id="settings-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden bg-black/60 backdrop-blur-sm transition-opacity duration-300">
+        <div class="glass-panel w-11/12 max-w-md rounded-2xl p-6 relative">
+            <button id="close-settings-btn" class="absolute top-4 right-4 text-gray-300 hover:text-white transition-colors">
+                <i data-lucide="x"></i>
+            </button>
+            <h2 class="text-xl font-bold mb-4 flex items-center gap-2"><i data-lucide="key" class="text-purple-400"></i> API 金鑰設定</h2>
+            <p class="text-sm text-gray-300 mb-4 leading-relaxed">請輸入您的 Gemini API Key 以啟用 AI 導遊功能。<br>
+               <span class="text-xs text-purple-300">※ 為保護資安，此金鑰僅會保存在您目前瀏覽器的本地儲存空間 (localStorage)，不會上傳至任何公開伺服器。</span>
+            </p>
+            <input type="password" id="api-key-input" placeholder="請貼上以 AIza 開頭的金鑰..." class="w-full bg-black/50 border border-gray-600 rounded-lg px-4 py-3 text-white mb-5 focus:outline-none focus:border-purple-500 transition-colors">
+            <div class="flex justify-end gap-3">
+                <button id="clear-key-btn" class="px-4 py-2 rounded-lg bg-red-500/20 text-red-300 hover:bg-red-500/40 transition-colors text-sm font-medium">清除金鑰</button>
+                <button id="save-key-btn" class="px-5 py-2 rounded-lg bg-purple-600 hover:bg-purple-500 text-white transition-colors text-sm font-medium shadow-lg">儲存並套用</button>
             </div>
         </div>
     </div>
@@ -107,16 +130,16 @@
             { name: "北京", nameEn: "Beijing", lat: 39.9042, lng: 116.4074, country: "中國", countryEn: "China" },
             { name: "上海", nameEn: "Shanghai", lat: 31.2304, lng: 121.4737, country: "中國", countryEn: "China" },
             { name: "廣州", nameEn: "Guangzhou", lat: 23.1291, lng: 113.2644, country: "中國", countryEn: "China" },
-            { name: "烏魯木齊", nameEn: "Urumqi", lat: 43.8256, lng: 87.6168, country: "中國", countryEn: "China" }, // 填補中亞交界
+            { name: "烏魯木齊", nameEn: "Urumqi", lat: 43.8256, lng: 87.6168, country: "中國", countryEn: "China" }, 
             
             // 北亞與俄羅斯
             { name: "莫斯科", nameEn: "Moscow", lat: 55.7558, lng: 37.6173, country: "俄羅斯", countryEn: "Russia" },
             { name: "聖彼得堡", nameEn: "St. Petersburg", lat: 59.9343, lng: 30.3351, country: "俄羅斯", countryEn: "Russia" },
-            { name: "新西伯利亞", nameEn: "Novosibirsk", lat: 55.0084, lng: 82.9357, country: "俄羅斯", countryEn: "Russia" }, // 填補西伯利亞
-            { name: "海參崴", nameEn: "Vladivostok", lat: 43.1198, lng: 131.8869, country: "俄羅斯", countryEn: "Russia" }, // 填補遠東
+            { name: "新西伯利亞", nameEn: "Novosibirsk", lat: 55.0084, lng: 82.9357, country: "俄羅斯", countryEn: "Russia" }, 
+            { name: "海參崴", nameEn: "Vladivostok", lat: 43.1198, lng: 131.8869, country: "俄羅斯", countryEn: "Russia" }, 
             
             // 中亞、西亞與南亞
-            { name: "塔什干", nameEn: "Tashkent", lat: 41.2995, lng: 69.2401, country: "烏茲別克", countryEn: "Uzbekistan" }, // 填補中亞
+            { name: "塔什干", nameEn: "Tashkent", lat: 41.2995, lng: 69.2401, country: "烏茲別克", countryEn: "Uzbekistan" }, 
             { name: "新德里", nameEn: "New Delhi", lat: 28.6139, lng: 77.2090, country: "印度", countryEn: "India" },
             { name: "孟買", nameEn: "Mumbai", lat: 19.0760, lng: 72.8777, country: "印度", countryEn: "India" },
             { name: "德黑蘭", nameEn: "Tehran", lat: 35.6892, lng: 51.3890, country: "伊朗", countryEn: "Iran" },
@@ -135,29 +158,29 @@
             { name: "柏林", nameEn: "Berlin", lat: 52.5200, lng: 13.4050, country: "德國", countryEn: "Germany" },
             { name: "羅馬", nameEn: "Rome", lat: 41.9028, lng: 12.4964, country: "義大利", countryEn: "Italy" },
             { name: "馬德里", nameEn: "Madrid", lat: 40.4168, lng: -3.7038, country: "西班牙", countryEn: "Spain" },
-            { name: "基輔", nameEn: "Kyiv", lat: 50.4501, lng: 30.5234, country: "烏克蘭", countryEn: "Ukraine" }, // 填補東歐
+            { name: "基輔", nameEn: "Kyiv", lat: 50.4501, lng: 30.5234, country: "烏克蘭", countryEn: "Ukraine" }, 
             { name: "雷克雅維克", nameEn: "Reykjavik", lat: 64.1466, lng: -21.9426, country: "冰島", countryEn: "Iceland" },
             
             // 北美洲
             { name: "紐約", nameEn: "New York", lat: 40.7128, lng: -74.0060, country: "美國", countryEn: "USA" },
             { name: "洛杉磯", nameEn: "Los Angeles", lat: 34.0522, lng: -118.2437, country: "美國", countryEn: "USA" },
             { name: "多倫多", nameEn: "Toronto", lat: 43.6510, lng: -79.3470, country: "加拿大", countryEn: "Canada" },
-            { name: "墨西哥城", nameEn: "Mexico City", lat: 19.4326, lng: -99.1332, country: "墨西哥", countryEn: "Mexico" }, // 填補中美洲
+            { name: "墨西哥城", nameEn: "Mexico City", lat: 19.4326, lng: -99.1332, country: "墨西哥", countryEn: "Mexico" }, 
             
             // 南美洲
             { name: "聖保羅", nameEn: "São Paulo", lat: -23.5505, lng: -46.6333, country: "巴西", countryEn: "Brazil" },
             { name: "里約熱內盧", nameEn: "Rio de Janeiro", lat: -22.9068, lng: -43.1729, country: "巴西", countryEn: "Brazil" },
-            { name: "瑪瑙斯", nameEn: "Manaus", lat: -3.1190, lng: -60.0217, country: "巴西", countryEn: "Brazil" }, // 填補亞馬遜雨林區
+            { name: "瑪瑙斯", nameEn: "Manaus", lat: -3.1190, lng: -60.0217, country: "巴西", countryEn: "Brazil" }, 
             { name: "布宜諾斯艾利斯", nameEn: "Buenos Aires", lat: -34.6037, lng: -58.3816, country: "阿根廷", countryEn: "Argentina" },
-            { name: "聖地牙哥", nameEn: "Santiago", lat: -33.4489, lng: -70.6693, country: "智利", countryEn: "Chile" }, // 填補安地斯山脈西側
-            { name: "波哥大", nameEn: "Bogotá", lat: 4.7110, lng: -74.0721, country: "哥倫比亞", countryEn: "Colombia" }, // 填補南美北部
+            { name: "聖地牙哥", nameEn: "Santiago", lat: -33.4489, lng: -70.6693, country: "智利", countryEn: "Chile" }, 
+            { name: "波哥大", nameEn: "Bogotá", lat: 4.7110, lng: -74.0721, country: "哥倫比亞", countryEn: "Colombia" }, 
             
             // 非洲
             { name: "開羅", nameEn: "Cairo", lat: 30.0444, lng: 31.2357, country: "埃及", countryEn: "Egypt" },
-            { name: "卡薩布蘭卡", nameEn: "Casablanca", lat: 33.5731, lng: -7.5898, country: "摩洛哥", countryEn: "Morocco" }, // 填補西北非
-            { name: "拉哥斯", nameEn: "Lagos", lat: 6.5244, lng: 3.3792, country: "奈及利亞", countryEn: "Nigeria" }, // 填補西非
-            { name: "金夏沙", nameEn: "Kinshasa", lat: -4.4419, lng: 15.2663, country: "剛果民主共和國", countryEn: "DRC" }, // 填補中非
-            { name: "阿迪斯阿貝巴", nameEn: "Addis Ababa", lat: 9.0320, lng: 38.7482, country: "衣索比亞", countryEn: "Ethiopia" }, // 填補東非
+            { name: "卡薩布蘭卡", nameEn: "Casablanca", lat: 33.5731, lng: -7.5898, country: "摩洛哥", countryEn: "Morocco" }, 
+            { name: "拉哥斯", nameEn: "Lagos", lat: 6.5244, lng: 3.3792, country: "奈及利亞", countryEn: "Nigeria" }, 
+            { name: "金夏沙", nameEn: "Kinshasa", lat: -4.4419, lng: 15.2663, country: "剛果民主共和國", countryEn: "DRC" }, 
+            { name: "阿迪斯阿貝巴", nameEn: "Addis Ababa", lat: 9.0320, lng: 38.7482, country: "衣索比亞", countryEn: "Ethiopia" }, 
             { name: "奈洛比", nameEn: "Nairobi", lat: -1.2921, lng: 36.8219, country: "肯亞", countryEn: "Kenya" },
             { name: "約翰尼斯堡", nameEn: "Johannesburg", lat: -26.2041, lng: 28.0473, country: "南非", countryEn: "South Africa" },
             { name: "開普敦", nameEn: "Cape Town", lat: -33.9249, lng: 18.4241, country: "南非", countryEn: "South Africa" },
@@ -216,12 +239,7 @@
         // 監聽滑鼠縮放與視角變動事件，動態調整 HTML 標籤大小
         world.controls().addEventListener('change', () => {
             const currentAlt = world.pointOfView().altitude;
-            // 重新計算動態縮放比例：設定嚴格的上下限
-            // Math.max(0.8, ...) 確保放大地球時，標籤縮小極限維持在 80% 大小，不會看不見
-            // Math.min(1.2, ...) 確保縮小地球時，標籤放大極限不會超過 120%，避免滿畫面都是字
             const dynamicScale = Math.max(0.8, Math.min(1.2, currentAlt * 0.4));
-            
-            // 透過 CSS Transform 即時更新尺寸
             document.querySelectorAll('.city-marker-content').forEach(el => {
                 el.style.transform = `translate(-50%, -50%) scale(${dynamicScale})`;
             });
@@ -249,22 +267,66 @@
         const weatherContent = document.getElementById('weather-content');
         const closeBtn = document.getElementById('close-btn');
         
-        // 新增 AI 獨立視窗的 DOM 元素
+        // AI 獨立視窗 DOM
         const aiModal = document.getElementById('ai-modal');
         const aiModalContent = document.getElementById('ai-modal-content');
         const closeAiModalBtn = document.getElementById('close-ai-modal-btn');
 
+        // 設定視窗 DOM
+        const settingsBtn = document.getElementById('settings-btn');
+        const settingsModal = document.getElementById('settings-modal');
+        const closeSettingsBtn = document.getElementById('close-settings-btn');
+        const apiKeyInput = document.getElementById('api-key-input');
+        const saveKeyBtn = document.getElementById('save-key-btn');
+        const clearKeyBtn = document.getElementById('clear-key-btn');
+
         // 改為優先從瀏覽器的 localStorage 讀取金鑰
         let userApiKey = localStorage.getItem('gemini_api_key') || ""; 
 
-        // API 重試機制 (強化錯誤處理，抓取真實錯誤訊息)
+        // ================= 設定介面邏輯 =================
+        settingsBtn.addEventListener('click', () => {
+            apiKeyInput.value = userApiKey; // 打開時帶入目前的 Key
+            settingsModal.classList.remove('hidden');
+        });
+
+        closeSettingsBtn.addEventListener('click', () => {
+            settingsModal.classList.add('hidden');
+        });
+
+        saveKeyBtn.addEventListener('click', () => {
+            const val = apiKeyInput.value.trim();
+            if(val) {
+                userApiKey = val;
+                localStorage.setItem('gemini_api_key', userApiKey);
+                
+                // 為了取代 alert，直接修改按鈕文字給予視覺回饋
+                const originalText = saveKeyBtn.innerHTML;
+                saveKeyBtn.innerHTML = '<i data-lucide="check"></i> 已儲存';
+                saveKeyBtn.classList.replace('bg-purple-600', 'bg-green-600');
+                lucide.createIcons();
+                
+                setTimeout(() => {
+                    settingsModal.classList.add('hidden');
+                    saveKeyBtn.innerHTML = originalText;
+                    saveKeyBtn.classList.replace('bg-green-600', 'bg-purple-600');
+                }, 1000);
+            }
+        });
+
+        clearKeyBtn.addEventListener('click', () => {
+            userApiKey = "";
+            apiKeyInput.value = "";
+            localStorage.removeItem('gemini_api_key');
+        });
+        // ===============================================
+
+        // API 重試機制
         async function fetchWithRetry(url, options, retries = 5) {
             let delay = 1000;
             for (let i = 0; i < retries; i++) {
                 try {
                     const response = await fetch(url, options);
                     if (!response.ok) {
-                        // 解析 Google API 回傳的真實錯誤細節
                         const errData = await response.json().catch(() => ({}));
                         throw new Error(errData.error?.message || `HTTP 錯誤碼: ${response.status}`);
                     }
@@ -277,19 +339,15 @@
             }
         }
 
-        // 呼叫 Gemini 共用函數 (加入安全輸入機制與本地儲存)
+        // 呼叫 Gemini 共用函數 (移除 prompt，改為開啟設定介面)
         async function callGeminiAPI(promptText) {
-            // 檢查是否已有 API Key，若無則跳出視窗要求輸入
+            // 如果沒有 Key，直接跳出設定視窗，並丟出一個特定錯誤中斷流程
             if (!userApiKey) {
-                userApiKey = prompt("請輸入您的 Gemini API Key 以啟用 AI 智能導遊：\n（為保護資安，此金鑰僅會保存在您目前瀏覽器的本地儲存空間，不會上傳外洩）");
-                if (!userApiKey) {
-                    throw new Error("未輸入 API Key，取消操作。");
-                }
-                // 將使用者輸入的金鑰存入 localStorage，下次重新整理就不必再輸入
-                localStorage.setItem('gemini_api_key', userApiKey);
+                settingsModal.classList.remove('hidden');
+                apiKeyInput.focus();
+                throw new Error("MISSING_KEY"); 
             }
 
-            // 【重要修改】根據 2026 最新官方文件，全面升級為 Gemini 3 系列模型
             const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${userApiKey}`;
             const options = {
                 method: "POST",
@@ -307,7 +365,6 @@
             weatherPanel.classList.add('hidden');
         });
 
-        // 綁定關閉 AI 獨立視窗事件
         closeAiModalBtn.addEventListener('click', () => {
             aiModal.classList.add('hidden');
         });
@@ -387,7 +444,6 @@
                         const originalHtml = btn.innerHTML;
                         btn.innerHTML = `<div class="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div> 載入中...`;
                         
-                        // 關鍵修改：開啟獨立視窗並顯示載入中狀態
                         aiModal.classList.remove('hidden');
                         aiModalContent.innerHTML = `
                             <div class="flex flex-col items-center justify-center h-48 gap-4">
@@ -400,20 +456,24 @@
                             const suggestion = await callGeminiAPI(promptText);
                             const cleanSuggestion = suggestion.replace(/\*\*/g, '');
                             
-                            // 更新獨立視窗內容為 AI 回覆
                             aiModalContent.innerHTML = `
                                 <h3 class="text-2xl font-bold text-purple-300 mb-4 pb-2 border-b border-purple-500/30 tracking-wide">${prefix.replace(/[:：]/g, '')}</h3>
                                 <div class="mt-2 text-gray-100 whitespace-pre-wrap leading-relaxed tracking-wide text-base">${cleanSuggestion}</div>
                             `;
                         } catch (error) {
-                            // 將真實錯誤訊息顯示在獨立視窗中
+                            // 如果只是單純沒輸入 Key 導致的中斷，安靜地收起 AI Modal 即可 (因為設定視窗已經彈出了)
+                            if (error.message === "MISSING_KEY") {
+                                aiModal.classList.add('hidden');
+                                return;
+                            }
+
                             console.error("Gemini API 發生錯誤:", error);
                             
-                            // --- 新增：攔截並美化「超過配額 (Rate Limit / Quota Exceeded)」的錯誤訊息 ---
                             let displayMessage = error.message;
+                            // 這裡將原本的 alert 修改為觸發設定面板
                             let actionButtonHtml = `
-                                <button onclick="localStorage.removeItem('gemini_api_key'); userApiKey=''; alert('金鑰已清除，請重新點擊 AI 按鈕輸入！'); document.getElementById('ai-modal').classList.add('hidden');" class="px-5 py-2 bg-red-500/20 hover:bg-red-500/40 border border-red-500/50 rounded-xl text-white text-sm transition-colors flex items-center gap-2">
-                                    <i data-lucide="key-round" class="w-4 h-4"></i> 清除並重設 API Key
+                                <button onclick="document.getElementById('ai-modal').classList.add('hidden'); document.getElementById('settings-modal').classList.remove('hidden');" class="px-5 py-2 bg-red-500/20 hover:bg-red-500/40 border border-red-500/50 rounded-xl text-white text-sm transition-colors flex items-center gap-2">
+                                    <i data-lucide="settings" class="w-4 h-4"></i> 前往設定檢查 API Key
                                 </button>
                             `;
 
@@ -474,11 +534,10 @@
     }
 }
 
-        // --- 新增：取得使用者地理位置功能 ---
+        // --- 取得使用者地理位置功能 ---
         const locateBtn = document.getElementById('locate-btn');
         locateBtn.addEventListener('click', () => {
             if ("geolocation" in navigator) {
-                // 顯示載入中動畫
                 const originalContent = locateBtn.innerHTML;
                 locateBtn.innerHTML = `<i data-lucide="loader-2" class="animate-spin"></i> <span class="hidden sm:inline">定位中...</span>`;
                 lucide.createIcons();
@@ -488,11 +547,9 @@
                         const lat = position.coords.latitude;
                         const lng = position.coords.longitude;
 
-                        // 恢復按鈕文字
                         locateBtn.innerHTML = originalContent;
                         lucide.createIcons();
 
-                        // 建立一個代表使用者位置的專屬物件
                         const myLocation = {
                             name: "目前位置",
                             nameEn: "My Location",
@@ -502,7 +559,6 @@
                             countryEn: "Geolocated"
                         };
 
-                        // 檢查是否已經點過定位，如果有就更新，沒有就加入城市陣列
                         const existingIndex = cities.findIndex(c => c.name === "目前位置");
                         if (existingIndex !== -1) {
                             cities[existingIndex] = myLocation;
@@ -510,10 +566,8 @@
                             cities.push(myLocation);
                         }
 
-                        // 更新地球上的 HTML 標籤
                         world.htmlElementsData(cities);
 
-                        // 強制套用目前的縮放比例，避免新標籤太大或太小
                         setTimeout(() => {
                             const currentAlt = world.pointOfView().altitude;
                             const dynamicScale = Math.max(0.8, Math.min(1.2, currentAlt * 0.4));
@@ -522,11 +576,9 @@
                             });
                         }, 50);
 
-                        // 模擬點擊這個新城市，轉動地球並呼叫天氣 API
                         handleCityClick(myLocation);
                     },
                     (error) => {
-                        // GeolocationPositionError 物件在 console.log 中通常顯示為 {}，因此我們需要提取其 code 和 message 屬性
                         let errorMessage = "未知錯誤";
                         switch(error.code) {
                             case error.PERMISSION_DENIED:
@@ -545,7 +597,7 @@
                         console.error("定位錯誤:", errorMessage, error.message);
                         locateBtn.innerHTML = `<i data-lucide="navigation-off"></i> <span class="hidden sm:inline">定位失敗</span>`;
                         lucide.createIcons();
-                        // 如果使用者拒絕授權或無法取得位置，顯示自訂的彈出視窗(避免使用瀏覽器內建 alert 影響體驗)
+                        
                         setTimeout(() => {
                             locateBtn.innerHTML = originalContent;
                             lucide.createIcons();
@@ -555,16 +607,15 @@
                                 <div class="text-center text-red-400 mt-4">
                                     <i data-lucide="alert-triangle" class="w-12 h-12 mx-auto mb-2"></i>
                                     <h3 class="text-xl font-bold mb-2">定位失敗</h3>
-                                    <p class="text-sm text-gray-300 mb-4">${errorMessage}<br>請確認您的裝置或瀏覽器已「允許」此網站存取位置資訊，並且您目前位於安全的 HTTPS 連線中 (或 localhost)。</p>
+                                    <p class="text-sm text-gray-300 mb-4">${errorMessage}<br>請確認您的裝置或瀏覽器已「允許」此網站存取位置資訊，並且您目前位於安全的 HTTPS 連線中 (或 localhost)。<br><span class="text-xs text-red-500 mt-2 block">※ 若您目前使用預覽畫面，因為瀏覽器沙盒限制將無法定位，請至 GitHub Pages 進行測試。</span></p>
                                 </div>
                             `;
                             lucide.createIcons();
                         }, 1000);
                     },
-                    { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 } // 定位參數設定
+                    { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
                 );
             } else {
-                // 瀏覽器不支援時的處理
                 weatherPanel.classList.remove('hidden');
                 weatherContent.innerHTML = `<div class="text-center text-red-400 mt-4"><p>您的瀏覽器不支援地理定位功能。</p></div>`;
             }
